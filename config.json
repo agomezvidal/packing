@@ -1,0 +1,37 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "{{user `region`}}",
+    "source_ami": "{{user `ami-id`}}",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "amzn-ami-hvm-*-x86_64-gp2",
+        "root-device-type": "ebs",
+        "state": "available"
+      },
+      "owners": ["amazon"],
+    "most_recent": true
+    },
+    "instance_type": "t2.xlarge",
+    "ssh_username": "{{user `aws-user`}}",
+    "ami_name": "{{user ` application`}}-{{user `service`}}-{{timestamp}}",
+    "ssh_pty" : "true",
+    "tags":  {
+      " application": "{{user ` application`}}",
+      "service": "{{user `service`}}"
+    }}],
+  "provisioners": [
+      {
+        "type": "file",
+        "source": "ops/terraform/aws/prod/domains.list",
+        "destination": "/tmp/domains.list"
+      },
+     {
+       "type": "ansible",
+       "user": "{{user `aws-user`}}",
+       "extra_arguments": [ "--extra-vars", "aws_region={{user `region`}}  application={{user ` application`}} service={{user `service`}} instance_name={{user `environ`}}-{{user ` application`}}-{{user `service`}}" ],
+       "playbook_file": "ops/ansible/{{user `service`}}.yml"
+     }
+  ]
+}
